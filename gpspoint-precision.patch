@@ -1,0 +1,450 @@
+diff -uNdr gpspoint-2.030521.old/src/constants.h gpspoint-2.030521/src/constants.h
+--- gpspoint-2.030521.old/src/constants.h	2003-04-14 18:23:32.000000000 +0200
++++ gpspoint-2.030521/src/constants.h	2004-03-18 19:42:12.000000000 +0100
+@@ -21,6 +21,8 @@
+ #define TIMEOFFSET 631065600
+ #define UNDEF_FLOAT 1E25
+ #define UNDEF_DOUBLE 1E25
++#define ALTPREC 1
++#define ARCPREC 7
+ 
+ namespace gpspoint2 {
+ using namespace std;
+diff -uNdr gpspoint-2.030521.old/src/main.cpp gpspoint-2.030521/src/main.cpp
+--- gpspoint-2.030521.old/src/main.cpp	2004-03-17 21:46:25.000000000 +0100
++++ gpspoint-2.030521/src/main.cpp	2004-03-18 20:16:31.000000000 +0100
+@@ -201,19 +201,19 @@
+ 
+    if(DOWNLOAD_WAYPOINTS) {
+       if(!want_to_die) gps.downloadWaypoints(waypointlist);
+-      *os << waypointlist.os();}
++      waypointlist.os(*os);}
+ 
+    if(DOWNLOAD_ROUTES){
+       if(!want_to_die) gps.downloadRoutes(routelist);
+-      *os << routelist.os();}
++      routelist.os(*os);}
+ 
+    if(DOWNLOAD_TRACKS){
+       if(!want_to_die) gps.downloadTracks(tracklist);
+-      *os << tracklist.os();}
++      tracklist.os(*os);}
+ 
+    if(DOWNLOAD_DATE_TIME){
+       if(!want_to_die) gps.downloadDateTime(datetime);
+-      *os << datetime.os();}
++      datetime.os(*os);}
+ 
+ 
+    if(ABORT_TRANSFER) gps.abortTransfer();
+diff -uNdr gpspoint-2.030521.old/src/route.cpp gpspoint-2.030521/src/route.cpp
+--- gpspoint-2.030521.old/src/route.cpp	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/route.cpp	2004-03-18 19:45:57.000000000 +0100
+@@ -14,6 +14,7 @@
+ //along with this program; if not, write to the Free Software
+ //Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
+ 
++#include <sstream>
+ #include "route.h"
+ 
+ namespace gpspoint2 {
+@@ -76,23 +77,23 @@
+ string Route::os(void)
+ {
+    
+-   string s="\n";
+-   if(size()<1) return s;
+-
+-   s += routeheader.os();
+-
+-   for(unsigned int i=0; i<routepoints.size(); i++)
+-      s += routepoints[i].os();
+-   
+-   s += " type=\"routeend\"\n" ;
+-
+-   return s;
++   ostringstream ost;
++   os(ost);
++   return ost.str();
+ }
+ 
+ 
+ void Route::os(ostream & o)
+ {
+-   o << os();
++   o<<"\n";
++   if(size()<1) return;
++
++   o << routeheader.os();
++
++   for(unsigned int i=0; i<routepoints.size(); i++)
++      routepoints[i].os(o);
++   
++   o<< " type=\"routeend\"\n" ;
+ }
+ 
+ }
+diff -uNdr gpspoint-2.030521.old/src/routelist.cpp gpspoint-2.030521/src/routelist.cpp
+--- gpspoint-2.030521.old/src/routelist.cpp	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/routelist.cpp	2004-03-18 19:55:41.000000000 +0100
+@@ -14,6 +14,7 @@
+ //along with this program; if not, write to the Free Software
+ //Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
+ 
++#include <sstream>
+ #include "routelist.h"
+ 
+ namespace gpspoint2 {
+@@ -22,17 +23,20 @@
+ 
+ string Routelist::os(void)
+ {
+-   string s="";
++   ostringstream ost;
++   os(ost);
++   return ost.str();
++}
++
++void Routelist::os(ostream& s)
++{
+    for(unsigned int i=0;i<routes.size();i++) 
+    {
+-      s += routes[i].header();
+-      for(int j=0; j<routes[i].size(); j++)
+-         s+= routepoint(i,j); 
+-      s += "type=\"routeend\"\n";
++      routes[i].os(s);
+    }
+-   return s;
+ }
+ 
++
+ Routelist::Routelist(void) { current_route= -1; }
+ 
+ void Routelist::is(string is)
+diff -uNdr gpspoint-2.030521.old/src/routelist.h gpspoint-2.030521/src/routelist.h
+--- gpspoint-2.030521.old/src/routelist.h	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/routelist.h	2004-03-18 19:42:12.000000000 +0100
+@@ -37,6 +37,7 @@
+ 
+       /// output to string 
+       string os(void);
++      void os(ostream&);
+ 
+       /// add data in gpd format
+       void is(string);
+diff -uNdr gpspoint-2.030521.old/src/track.cpp gpspoint-2.030521/src/track.cpp
+--- gpspoint-2.030521.old/src/track.cpp	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/track.cpp	2004-03-18 19:56:46.000000000 +0100
+@@ -14,6 +14,7 @@
+ //along with this program; if not, write to the Free Software
+ //Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
+ 
++#include <sstream>
+ #include "track.h"
+ 
+ namespace gpspoint2 {
+@@ -79,23 +80,23 @@
+ string Track::os(void)
+ {
+    
+-   string s="\n";
+-   if(size()<1) return s;
+-
+-   s += trackheader.os();
+-
+-   for(unsigned int i=0; i<trackpoints.size(); i++)
+-      s += trackpoints[i].os();
+-   
+-   s += " type=\"endtrack\"\n" ;
+-
+-   return s;
++   ostringstream ost;
++   os(ost);
++   return ost.str();
+ }
+ 
+ 
+ void Track::os(ostream & o)
+ {
+-   o << os();
++   o<<"\n";
++   if(size()<1) return;
++
++   trackheader.os(o);
++
++   for(unsigned int i=0; i<trackpoints.size(); i++)
++      trackpoints[i].os(o);
++   
++   o<<" type=\"endtrack\"\n" ;
+ }
+ 
+ }
+diff -uNdr gpspoint-2.030521.old/src/tracklist.cpp gpspoint-2.030521/src/tracklist.cpp
+--- gpspoint-2.030521.old/src/tracklist.cpp	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/tracklist.cpp	2004-03-18 19:57:09.000000000 +0100
+@@ -14,6 +14,7 @@
+ //along with this program; if not, write to the Free Software
+ //Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
+ 
++#include <sstream>
+ #include "tracklist.h"
+ 
+ namespace gpspoint2 {
+@@ -22,15 +23,16 @@
+ 
+ string Tracklist::os(void)
+ {
+-   string s="";
++   ostringstream ost;
++   os(ost);
++   return ost.str();
++}
++void Tracklist::os(ostream& s)
++{
+    for(unsigned int i=0;i<tracks.size();i++) 
+    {
+-      s += tracks[i].header();
+-      for(int j=0; j<tracks[i].size(); j++)
+-         s+= trackpoint(i,j); 
+-      s += "type=\"trackend\"\n";
++      tracks[i].os(s);
+    }
+-   return s;
+ }
+ 
+ 
+diff -uNdr gpspoint-2.030521.old/src/tracklist.h gpspoint-2.030521/src/tracklist.h
+--- gpspoint-2.030521.old/src/tracklist.h	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/tracklist.h	2004-03-18 19:42:12.000000000 +0100
+@@ -37,6 +37,7 @@
+ 
+       /// output to string 
+       string os(void);
++      void os(ostream& s);
+ 
+       /// add data in gpd format
+       void is(string);
+diff -uNdr gpspoint-2.030521.old/src/trk_hdr_type.cpp gpspoint-2.030521/src/trk_hdr_type.cpp
+--- gpspoint-2.030521.old/src/trk_hdr_type.cpp	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/trk_hdr_type.cpp	2004-03-18 20:04:03.000000000 +0100
+@@ -29,7 +29,7 @@
+    return s;
+ }
+ 
+-void Trk_Hdr_Type::os(ostream os)
++void Trk_Hdr_Type::os(ostream& os)
+ {
+    os << this->os();
+ }
+diff -uNdr gpspoint-2.030521.old/src/trk_hdr_type.h gpspoint-2.030521/src/trk_hdr_type.h
+--- gpspoint-2.030521.old/src/trk_hdr_type.h	2003-05-20 11:54:34.000000000 +0200
++++ gpspoint-2.030521/src/trk_hdr_type.h	2004-03-18 20:03:54.000000000 +0100
+@@ -38,7 +38,7 @@
+       /// output as string
+       string os(void);
+       /// output to stream
+-      void os(ostream);
++      void os(ostream&);
+ 
+ 
+       /// set the data by garmin-packet 
+diff -uNdr gpspoint-2.030521.old/src/trk_point_type.cpp gpspoint-2.030521/src/trk_point_type.cpp
+--- gpspoint-2.030521.old/src/trk_point_type.cpp	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/trk_point_type.cpp	2004-03-18 20:10:56.000000000 +0100
+@@ -14,6 +14,8 @@
+ //along with this program; if not, write to the Free Software
+ //Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
+ 
++#include <sstream>
++#include <iomanip>
+ #include "trk_point_type.h"
+ 
+ namespace gpspoint2 {
+@@ -29,20 +31,26 @@
+ 
+ string Trk_Point_Type::os(void)
+ {
+-   string s;
+-   s  ="type=\"trackpoint\"  " ;
+-   if(altitude!=float(UNDEF_FLOAT)) s += "altitude=\"" + f2s(altitude,0) + "\"  ";
+-   if(latitude!=double(UNDEF_DOUBLE)) s += "latitude=\"" + GPDLineTool::d2s(latitude) + "\"  ";
+-   if(longitude!=double(UNDEF_DOUBLE)) s += "longitude=\"" + GPDLineTool::d2s(longitude) + "\"  ";
+-	if(unixtime!=-1){ s += "unixtime=\"" + toGPD(unixtime) + "\"  ";}
+-   if(new_segment) s += "newsegment=\"yes\" ";
+-   s+="\n";
+-   return s;
++   ostringstream ost;
++   os(ost);
++   return ost.str();
+ }
+ 
+-void Trk_Point_Type::os(ostream os)
++void Trk_Point_Type::os(ostream& os)
+ {
+-   os << this->os();
++   os << "type=\"trackpoint\"  " ;
++   if(altitude!=float(UNDEF_FLOAT))
++      os<< "altitude=\"" << fixed << setprecision(ALTPREC) << altitude << "\"  ";
++   if(latitude!=double(UNDEF_DOUBLE))
++      os<< "latitude=\"" << fixed << setprecision(ARCPREC) << latitude << "\"  ";
++   if(longitude!=double(UNDEF_DOUBLE)) 
++      os << "longitude=\"" << fixed << setprecision(ARCPREC) << longitude << "\"  ";
++   if(unixtime!=-1) { 
++      os<< "unixtime=\"" << toGPD(unixtime) << "\"  ";
++   }
++   if(new_segment) 
++      os<< "newsegment=\"yes\" ";
++   os <<"\n";
+ }
+ 
+ void Trk_Point_Type::clear(void)
+diff -uNdr gpspoint-2.030521.old/src/trk_point_type.h gpspoint-2.030521/src/trk_point_type.h
+--- gpspoint-2.030521.old/src/trk_point_type.h	2003-05-20 11:54:34.000000000 +0200
++++ gpspoint-2.030521/src/trk_point_type.h	2004-03-18 20:06:53.000000000 +0100
+@@ -46,7 +46,7 @@
+       string os(void);
+    
+       /// same as os(void) but output to ostream
+-      void os(ostream);
++      void os(ostream&);
+    
+    
+       /// set the data by garmin-packet 
+diff -uNdr gpspoint-2.030521.old/src/waypointlist.cpp gpspoint-2.030521/src/waypointlist.cpp
+--- gpspoint-2.030521.old/src/waypointlist.cpp	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/waypointlist.cpp	2004-03-18 19:58:16.000000000 +0100
+@@ -14,6 +14,7 @@
+ //along with this program; if not, write to the Free Software
+ //Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
+ 
++#include <sstream>
+ #include "waypointlist.h"
+ 
+ namespace gpspoint2 {
+@@ -65,17 +66,21 @@
+ 
+ string Waypointlist::os(void)
+ {
+-   string s="\n";
+-	if(size()<1) return s;
+-   s += "type=\"waypointlist\"\n" ;
+-   for(unsigned int i=0; i<waypointlist.size(); i++)
+-      s += waypointlist[i].os();
+-   s += "type=\"waypointlistend\"\n" ;
+-   return s;
++   ostringstream ost;
++   os(ost);
++   return ost.str();
+ }
+ 
+ 
+-void Waypointlist::os(ostream & o) { 
+-	o << os(); }
++void Waypointlist::os(ostream & o) 
++{ 
++   o<<"\n";
++   if(size()<1) 
++     return;
++   o<< "type=\"waypointlist\"\n" ;
++   for(unsigned int i=0; i<waypointlist.size(); i++)
++      waypointlist[i].os(o);
++   o<< "type=\"waypointlistend\"\n" ;
++}
+ 
+ }
+diff -uNdr gpspoint-2.030521.old/src/wpt_type.cpp gpspoint-2.030521/src/wpt_type.cpp
+--- gpspoint-2.030521.old/src/wpt_type.cpp	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/wpt_type.cpp	2004-03-18 20:12:18.000000000 +0100
+@@ -14,6 +14,8 @@
+ //along with this program; if not, write to the Free Software
+ //Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
+ 
++#include <sstream>
++#include <iomanip>
+ #include "wpt_type.h"
+ 
+ 
+@@ -33,25 +35,32 @@
+ 
+ string Wpt_Type::os(void)
+ {
+-   string s;
+-   if(isRoutepoint)
+-      s  ="type=\"routepoint\"  " ;
+-   else
+-      s  ="type=\"waypoint\"  " ;
+-   if(name!="") s += "name=\"" +  name +  "\"  " ;
+-   if(comment!="") s += "comment=\"" + comment + "\"  ";
+-   if(altitude!=float(UNDEF_FLOAT)) s += "altitude=\"" + f2s(altitude,1) + "\"  ";
+-   if(latitude!=double(UNDEF_DOUBLE)) s += "latitude=\"" + GPDLineTool::d2s(latitude,5) + "\"  ";
+-   if(longitude!=double(UNDEF_DOUBLE)) s += "longitude=\"" + GPDLineTool::d2s(longitude,5) + "\"  ";
+-   if(symbol!="") s += "symbol=\"" + symbol + "\"  ";
+-   if(display_option!="") s += "display_option=\"" + display_option+ "\"  ";
+-   s+="\n";
+-   return s;
++   ostringstream ost;
++   os(ost);
++   return ost.str();
+ }
+ 
+-void Wpt_Type::os(ostream os)
++void Wpt_Type::os(ostream& os)
+ {
+-   os << this->os();
++   if(isRoutepoint)
++      os<<"type=\"routepoint\"  " ;
++   else
++      os<<"type=\"waypoint\"  " ;
++   if(name!="") 
++      os<< "name=\"" <<  name <<  "\"  " ;
++   if(comment!="")
++      os<< "comment=\"" << comment << "\"  ";
++   if(altitude!=float(UNDEF_FLOAT))
++      os<< "altitude=\"" << fixed << setprecision(ALTPREC) << altitude << "\"  ";
++   if(latitude!=double(UNDEF_DOUBLE))
++      os<< "latitude=\"" << fixed << setprecision(ARCPREC) <<latitude << "\"  ";
++   if(longitude!=double(UNDEF_DOUBLE))
++      os<< "longitude=\"" << fixed << setprecision(ARCPREC) <<longitude << "\"  ";
++   if(symbol!="") 
++      os<< "symbol=\"" << symbol << "\"  ";
++   if(display_option!="") 
++      os<< "display_option=\"" << display_option<< "\"  ";
++   os<<"\n";
+ }
+ 
+ 
+diff -uNdr gpspoint-2.030521.old/src/wpt_type.h gpspoint-2.030521/src/wpt_type.h
+--- gpspoint-2.030521.old/src/wpt_type.h	2003-05-20 11:54:34.000000000 +0200
++++ gpspoint-2.030521/src/wpt_type.h	2004-03-18 19:47:55.000000000 +0100
+@@ -41,7 +41,7 @@
+    /// output-string return the data in gpd-string format 
+    string os(void);
+ 
+-   void os(ostream);
++   void os(ostream&);
+ 
+    Wpt_Type(void);
+ 
+--- gpspoint-2.030521.old/src/date_time_type.cpp	2003-04-14 18:23:32.000000000 +0200
++++ gpspoint-2.030521/src/date_time_type.cpp	2004-03-18 20:35:15.000000000 +0100
+@@ -37,7 +37,7 @@
+    return s;
+ }
+ 
+-void Date_Time_Type::os(ostream os)
++void Date_Time_Type::os(ostream& os)
+ {
+    os << this->os();
+ }
+--- gpspoint-2.030521.old/src/date_time_type.h	2003-05-20 11:54:34.000000000 +0200
++++ gpspoint-2.030521/src/date_time_type.h	2004-03-18 20:35:30.000000000 +0100
+@@ -39,7 +39,7 @@
+    /// output-string return the data in gpd-string format 
+    string os(void);
+ 
+-   void os(ostream);
++   void os(ostream&);
+ 
+    Date_Time_Type(void);
+ 

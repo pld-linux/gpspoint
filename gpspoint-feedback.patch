@@ -1,0 +1,641 @@
+diff -uNdr gpspoint-2.030521.old/src/Makefile.am gpspoint-2.030521/src/Makefile.am
+--- gpspoint-2.030521.old/src/Makefile.am	2003-05-21 10:37:15.000000000 +0200
++++ gpspoint-2.030521/src/Makefile.am	2004-03-07 17:03:49.000000000 +0100
+@@ -23,7 +23,8 @@
+            d310_trk_hdr_type.cpp    pos_type.cpp     trk_point_type.cpp\
+            d700_pos_type.cpp        position.cpp     waypointlist.cpp\
+            endianmess.cpp           posixserial.cpp  win32serial.cpp wpt_type.cpp \
+-			  date_time_type.cpp d600_date_time_type.cpp
++	    date_time_type.cpp d600_date_time_type.cpp \
++	    deffeedback.cpp nullfeedback.cpp
+ 
+ libgpspoint2includedir = $(includedir)/gpspoint2
+ 
+@@ -41,7 +42,8 @@
+       d700_pos_type.h        position.h            wpt_type.h \
+       datatypes.h            posixserial.h  win32serial.h\
+       endianmess.h           product_data_type.h	declarations.h\
+-		date_time_type.h d600_date_time_type.h libgpspoint_config.h
++	date_time_type.h d600_date_time_type.h libgpspoint_config.h \
++	feedback.h deffeedback.h nullfeedback.h
+ 
+ 
+ 
+diff -uNdr gpspoint-2.030521.old/src/deffeedback.cpp gpspoint-2.030521/src/deffeedback.cpp
+--- gpspoint-2.030521.old/src/deffeedback.cpp	1970-01-01 01:00:00.000000000 +0100
++++ gpspoint-2.030521/src/deffeedback.cpp	2004-03-07 17:03:49.000000000 +0100
+@@ -0,0 +1,54 @@
++//Copyright (C) 2004 Bartek Szady
++// 
++//This program is free software; you can redistribute it and/or
++//modify it under the terms of the GNU General Public License
++//as published by the Free Software Foundation; either version 2
++//of the License, or (at your option) any later version.
++//
++//This program is distributed in the hope that it will be useful,
++//but WITHOUT ANY WARRANTY; without even the implied warranty of
++//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++//GNU General Public License for more details.
++//
++//You should have received a copy of the GNU General Public License
++//along with this program; if not, write to the Free Software
++//Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
++
++#include "deffeedback.h"
++#include <cstdlib>
++#include <iomanip>
++
++
++using namespace std;
++using namespace gpspoint2;
++
++void DefFeedBack::progress(int i,int n)
++{
++   const int zmax = 50;
++
++   int percent=0;
++   if(i==n) percent=100;
++   else percent=i*100/n;
++   
++   if(i!=0) for(int d=0;d<zmax+9;d++) cerr << char(8);
++   else cerr << endl;
++   cerr << "¦";
++
++   int zpos = i*zmax/n;
++   for(int j=0; j<zmax;j++) {
++      if(float(j)<zpos) cerr << "=";
++      else cerr <<" "; }
++
++   cerr <<"¦ ";
++   if(i%4==0) cerr << "|";
++   if(i%4==1) cerr << "/";
++   if(i%4==2) cerr << "-";
++   if(i%4==3) cerr << "\\";
++   cerr << setw(4)<< percent  << "%" << flush;
++
++   if(n==i){ for(int j=0;j<6;j++) cerr<<char(8); cerr << "done !" << endl; }
++}
++ostream&  DefFeedBack::getStream()
++{
++  return cerr;
++}
+diff -uNdr gpspoint-2.030521.old/src/deffeedback.h gpspoint-2.030521/src/deffeedback.h
+--- gpspoint-2.030521.old/src/deffeedback.h	1970-01-01 01:00:00.000000000 +0100
++++ gpspoint-2.030521/src/deffeedback.h	2004-03-07 17:03:49.000000000 +0100
+@@ -0,0 +1,37 @@
++//Copyright (C) 2004 Bartek Szady
++// 
++//This program is free software; you can redistribute it and/or
++//modify it under the terms of the GNU General Public License
++//as published by the Free Software Foundation; either version 2
++//of the License, or (at your option) any later version.
++//
++//This program is distributed in the hope that it will be useful,
++//but WITHOUT ANY WARRANTY; without even the implied warranty of
++//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++//GNU General Public License for more details.
++//
++//You should have received a copy of the GNU General Public License
++//along with this program; if not, write to the Free Software
++//Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
++
++#ifndef _DEFFEEDBACK_H
++#define _DEFFEEDBACK_H
++
++#include <streambuf>
++#include "feedback.h"
++
++namespace gpspoint2 {
++using namespace std;
++using namespace gpspoint2;
++
++
++/// This Class provides feedback to user
++class DefFeedBack :public FeedBack
++{
++   public:
++      virtual void progress(int i,int n);
++      virtual ostream& getStream();
++};
++
++}
++#endif 
+diff -uNdr gpspoint-2.030521.old/src/feedback.h gpspoint-2.030521/src/feedback.h
+--- gpspoint-2.030521.old/src/feedback.h	1970-01-01 01:00:00.000000000 +0100
++++ gpspoint-2.030521/src/feedback.h	2004-03-07 17:03:49.000000000 +0100
+@@ -0,0 +1,38 @@
++//Copyright (C) 2004 Bartek Szady
++// 
++//This program is free software; you can redistribute it and/or
++//modify it under the terms of the GNU General Public License
++//as published by the Free Software Foundation; either version 2
++//of the License, or (at your option) any later version.
++//
++//This program is distributed in the hope that it will be useful,
++//but WITHOUT ANY WARRANTY; without even the implied warranty of
++//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++//GNU General Public License for more details.
++//
++//You should have received a copy of the GNU General Public License
++//along with this program; if not, write to the Free Software
++//Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
++
++#ifndef _FEEDBACK_H
++#define _FEEDBACK_H
++
++#include <iostream>
++
++namespace gpspoint2 {
++using namespace std;
++using namespace gpspoint2;
++
++
++/// This Class provides feedback to user
++class FeedBack
++{
++   public:
++      virtual ~FeedBack()
++      {}
++      virtual void progress(int i,int n)=0;
++      virtual ostream& getStream() =0;
++};
++
++}
++#endif 
+diff -uNdr gpspoint-2.030521.old/src/garmingps.cpp gpspoint-2.030521/src/garmingps.cpp
+--- gpspoint-2.030521.old/src/garmingps.cpp	2003-05-18 14:59:43.000000000 +0200
++++ gpspoint-2.030521/src/garmingps.cpp	2004-03-07 17:03:49.000000000 +0100
+@@ -19,6 +19,7 @@
+ #include "constants.h"
+ #include "records_type.h"
+ #include "d210_rte_link_type.h"
++#include "deffeedback.h"
+ 
+ #include <iomanip>
+ #include <iostream>
+@@ -29,9 +30,15 @@
+ using namespace std;
+ using namespace gpspoint2;
+ 
+-extern bool quiet;
+ extern bool want_to_die;
+ 
++GarminGPS::GarminGPS(FeedBack* AFeedBack)
++{
++  if (AFeedBack==NULL)
++    feedBack=new DefFeedBack;
++  else
++    feedBack=AFeedBack;
++} 
+ 
+ void GarminGPS::uploadRoutes(Routelist &rtl)
+ {
+@@ -50,23 +57,23 @@
+    records.n = n ;
+    Packet recordsPacket = records.makePacket();
+    sendPacket(recordsPacket);
+-   if(!quiet)cerr << "uploading " << n << " packets routedata: " ;
+-   printFortschritt(0,n);
++   feedBack->getStream() << "uploading " << n << " packets routedata: " ;
++   feedBack->progress(0,n);
+ 
+    for(int r=0;r<rtl.sizeRoutes();r++) {
+       garmin_routeheader->clear();
+       *garmin_routeheader << rtl.header(r);
+       Packet th = garmin_routeheader->makePacket();
+-      sendPacket(th);i++; printFortschritt(i,n); 
++      sendPacket(th);i++; feedBack->progress(i,n); 
+       for(int p=0; p<rtl.sizeRoutepoints(r);p++) {
+          garmin_waypoint->clear();
+          *garmin_waypoint << rtl.routepoint(r,p);
+          Packet tp = garmin_waypoint->makePacket();
+-         sendPacket(tp);i++; printFortschritt(i,n); 
++         sendPacket(tp);i++; feedBack->progress(i,n); 
+          if(sendRouteLinkData){
+          	D210_Rte_Link_Type routelink;
+ 				Packet rl = routelink.makePacket();
+-	         sendPacket(rl);i++; printFortschritt(i,n); } } }
++	         sendPacket(rl);i++; feedBack->progress(i,n); } } }
+ 
+    Packet transComplete;   // send track transfer complete
+    transComplete.pid = Pid_Xfer_Cmplt;
+@@ -91,20 +98,20 @@
+    records.n = n ;
+    Packet recordsPacket = records.makePacket();
+    sendPacket(recordsPacket);
+-   if(!quiet)cerr << "uploading " << n << " packets trackdata: " ;
+-   printFortschritt(0,n);
++   feedBack->getStream() << "uploading " << n << " packets trackdata: " ;
++   feedBack->progress(0,n);
+ 
+    for(int t=0;t<tkl.sizeTracks();t++) {
+       if(trackHeader) {
+          garmin_trackheader->clear();
+          *garmin_trackheader << tkl.header(t);
+          Packet th = garmin_trackheader->makePacket();
+-         sendPacket(th);i++; printFortschritt(i,n); }
++         sendPacket(th);i++; feedBack->progress(i,n); }
+       for(int p=0; p<tkl.sizeTrackpoints(t);p++) {
+          garmin_trackpoint->clear();
+          *garmin_trackpoint << tkl.trackpoint(t,p);
+          Packet tp = garmin_trackpoint->makePacket();
+-         sendPacket(tp);i++; printFortschritt(i,n); } }
++         sendPacket(tp);i++; feedBack->progress(i,n); } }
+ 
+    Packet transComplete;   // send track transfer complete
+    transComplete.pid = Pid_Xfer_Cmplt;
+@@ -123,15 +130,15 @@
+    records.n = n ;
+    Packet recordsPacket = records.makePacket();
+    sendPacket(recordsPacket);
+-   if(!quiet)cerr << "uploading " << n << " waypoints: " ;
+-   printFortschritt(0,n);
++   feedBack->getStream() << "uploading " << n << " waypoints: " ;
++   feedBack->progress(0,n);
+ 
+    for(int i=0;i<n && !want_to_die;i++) {  // send waypoints
+       garmin_waypoint->clear();
+       *garmin_waypoint << wpl[i];
+       Packet waypointPacket  = garmin_waypoint->makePacket();
+       sendPacket(waypointPacket);
+-      printFortschritt(i+1,n); }
++      feedBack->progress(i+1,n); }
+ 
+    if(want_to_die) { 
+       abortTransfer();
+@@ -178,9 +185,9 @@
+    Records_Type  rt(records);
+    int n = rt.n;
+ 	if(n>0){
+-	   if(!quiet) cerr << "downloading " << n << " packets routedata: " ;
+-	   printFortschritt(0,n);}
+-	else cerr << "no routes to download " << endl;
++	   feedBack->getStream() << "downloading " << n << " packets routedata: " ;
++	   feedBack->progress(0,n);}
++	else feedBack->getStream() << "no routes to download " << endl;
+ 
+    for(int i=0; i<n && !want_to_die; i++) {
+       Packet p;   
+@@ -193,7 +200,7 @@
+          garmin_waypoint->clear();   
+          garmin_waypoint->set(p);
+          rtl << garmin_waypoint->os(); }
+-      printFortschritt(i+1,n);   }
++      feedBack->progress(i+1,n);   }
+ 
+    if(want_to_die) { 
+       abortTransfer();
+@@ -216,8 +223,8 @@
+    getPacket(records);
+    Records_Type  rt(records);
+    int n = rt.n;
+-   if(!quiet) cerr << "downloading " << n << " packets trackdata: " ;
+-   printFortschritt(0,n);
++   feedBack->getStream() << "downloading " << n << " packets trackdata: " ;
++   feedBack->progress(0,n);
+ 
+    for(int i=0; i<n && !want_to_die; i++) {
+       Packet p;   
+@@ -230,7 +237,7 @@
+          garmin_trackpoint->clear();   
+          garmin_trackpoint->set(p);
+          tkl << garmin_trackpoint->os(); }
+-      printFortschritt(i+1,n); }
++      feedBack->progress(i+1,n); }
+ 
+    if(want_to_die) { 
+       abortTransfer();
+@@ -252,8 +259,8 @@
+    getPacket(records);
+    Records_Type  rt(records);
+    int n = rt.n;
+-   if(!quiet) cerr << "downloading " << n << " waypoints: " ;
+-   printFortschritt(0,n);
++   feedBack->getStream() << "downloading " << n << " waypoints: " ;
++   feedBack->progress(0,n);
+ 
+    for(int i=0; i<n && !want_to_die; i++) { // download waypoints
+       Packet wpp;   
+@@ -264,11 +271,11 @@
+       	Wpt_Type wpt;
+       	wpt << garmin_waypoint->os();
+       	wpl.add(wpt); 
+-      	printFortschritt(i+1,n); 
++      	feedBack->progress(i+1,n); 
+ 		}
+ 		else
+ 		{
+-			cerr << endl << "!!! download failed"  << endl;
++			feedBack->getStream() << endl << "!!! download failed"  << endl;
+ 			want_to_die=true;
+ 		}}
+ 
+@@ -281,36 +288,6 @@
+ }
+ 
+ 
+-void GarminGPS::printFortschritt(int i,int n)
+-{
+-   if(quiet) return;
+-
+-   const int zmax = 50;
+-
+-	int percent=0;
+-	if(i==n) percent=100;
+-	else percent=int(((float(i)/float(n))*float(100))) ;
+-
+-   if(i!=0) for(int d=0;d<zmax+9;d++) cerr << char(8);
+-   else cerr << endl;
+-   cerr << "¦";
+-
+-   for(int j=0; j<zmax;j++) {
+-      if(float(j)<(float(i)/float(n)*float(zmax))) cerr << "=";
+-      else cerr <<" "; }
+-
+-   cerr <<"¦ ";
+-   if(i%4==0) cerr << "|";
+-   if(i%4==1) cerr << "/";
+-   if(i%4==2) cerr << "-";
+-   if(i%4==3) cerr << "\\";
+-   cerr << setw(4)<< percent  << "%" << flush;
+-
+-   if(n==i){ for(int j=0;j<6;j++) cerr<<char(8); cerr << "done !" << endl; }
+-}
+-
+-
+-
+ void GarminGPS::abortTransfer(void)
+ {
+    Packet abort;
+diff -uNdr gpspoint-2.030521.old/src/garmingps.h gpspoint-2.030521/src/garmingps.h
+--- gpspoint-2.030521.old/src/garmingps.h	2003-05-20 11:54:34.000000000 +0200
++++ gpspoint-2.030521/src/garmingps.h	2004-03-07 17:04:24.000000000 +0100
+@@ -23,6 +23,7 @@
+ #include "routelist.h"
+ #include "tracklist.h"
+ #include "date_time_type.h"
++#include "feedback.h"
+ 
+ 
+ /// all classes, global data etc are located in the namespace gpspoint2
+@@ -35,8 +36,17 @@
+ class GarminGPS : Protocol, Constants
+ {
+    public:
++	GarminGPS(FeedBack* AFeedBack=NULL);
++	~GarminGPS()
++	{
++	  delete feedBack;
++	}
++	FeedBack* getFeedBack() const;
++	void setFeedBack(FeedBack* AFeedBack);
+ 
+    protected:
++        FeedBack* feedBack;
++   
+         /// set device e.g. /dev/ttyS1
+         void setDevice(string s){Protocol::setDevice(s);}
+            
+@@ -49,7 +59,7 @@
+         /// set Bauds for device
+         void setSpeed(string s) { Protocol::setSpeed(s); }
+ 
+-        void printTest(void){ Protocol::printTest();}
++        void printTest(void){ Protocol::printTest(feedBack->getStream());}
+ 
+         void downloadDateTime(Date_Time_Type &dt);
+ 
+@@ -72,11 +82,20 @@
+    /// device failed
+         const DeviceInfo *getInfo() { return Protocol::getInfo(); }
+ 
+-   private:
+-        void printFortschritt(int i, int n);
+-
+ };
+ 
++inline
++FeedBack* GarminGPS::getFeedBack() const
++{
++  return feedBack;
++}
++inline
++void GarminGPS::setFeedBack(FeedBack* AFeedBack)
++{
++  delete feedBack;
++  feedBack=AFeedBack;
++}
++
+ }
+ #endif 
+ 
+diff -uNdr gpspoint-2.030521.old/src/gps.h gpspoint-2.030521/src/gps.h
+--- gpspoint-2.030521.old/src/gps.h	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/gps.h	2004-03-07 17:03:49.000000000 +0100
+@@ -29,6 +29,11 @@
+ class GPS : GarminGPS
+ {
+    public:
++      GPS(FeedBack* AFeedBack=NULL):
++        GarminGPS(AFeedBack)
++      {}
++      FeedBack* getFeedBack() const{ return GarminGPS::getFeedBack();}
++      void setFeedBack(FeedBack* AFeedBack){ GarminGPS::setFeedBack(AFeedBack);}
+       /// set the Device
+       void setDevice(string s){ GarminGPS::setDevice(s);}
+       /// set speed for the device
+diff -uNdr gpspoint-2.030521.old/src/main.cpp gpspoint-2.030521/src/main.cpp
+--- gpspoint-2.030521.old/src/main.cpp	2003-05-21 09:44:33.000000000 +0200
++++ gpspoint-2.030521/src/main.cpp	2004-03-07 17:03:49.000000000 +0100
+@@ -20,6 +20,7 @@
+ #include "waypointlist.h"
+ #include "tracklist.h"
+ #include "date_time_type.h"
++#include "nullfeedback.h"
+ 
+ #include <string>
+ #include <fstream>
+@@ -92,7 +93,7 @@
+       if ( string(argv[i])=="-s" ||  string(argv[i])=="--speed") 
+          if(argc>i+1) speed=argv[i+1];
+ 
+-      if (string(argv[i])=="-q") quiet = true;
++      if (string(argv[i])=="-q") gps.setFeedBack(new NullFeedBack);
+ 
+       if (string(argv[i])=="-if"|| string(argv[i])=="--input-file") 
+          if(argc>i+1) infile=argv[i+1];
+diff -uNdr gpspoint-2.030521.old/src/nullfeedback.cpp gpspoint-2.030521/src/nullfeedback.cpp
+--- gpspoint-2.030521.old/src/nullfeedback.cpp	1970-01-01 01:00:00.000000000 +0100
++++ gpspoint-2.030521/src/nullfeedback.cpp	2004-03-07 17:03:49.000000000 +0100
+@@ -0,0 +1,26 @@
++//Copyright (C) 2004 Bartek Szady
++// 
++//This program is free software; you can redistribute it and/or
++//modify it under the terms of the GNU General Public License
++//as published by the Free Software Foundation; either version 2
++//of the License, or (at your option) any later version.
++//
++//This program is distributed in the hope that it will be useful,
++//but WITHOUT ANY WARRANTY; without even the implied warranty of
++//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++//GNU General Public License for more details.
++//
++//You should have received a copy of the GNU General Public License
++//along with this program; if not, write to the Free Software
++//Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
++
++
++#include "nullfeedback.h"
++
++using namespace std;
++using namespace gpspoint2;
++
++NullFeedBack::NullFeedBack():
++nb(),os(&nb)
++{}
++
+diff -uNdr gpspoint-2.030521.old/src/nullfeedback.h gpspoint-2.030521/src/nullfeedback.h
+--- gpspoint-2.030521.old/src/nullfeedback.h	1970-01-01 01:00:00.000000000 +0100
++++ gpspoint-2.030521/src/nullfeedback.h	2004-03-07 17:03:49.000000000 +0100
+@@ -0,0 +1,57 @@
++//Copyright (C) 2004 Bartek Szady
++// 
++//This program is free software; you can redistribute it and/or
++//modify it under the terms of the GNU General Public License
++//as published by the Free Software Foundation; either version 2
++//of the License, or (at your option) any later version.
++//
++//This program is distributed in the hope that it will be useful,
++//but WITHOUT ANY WARRANTY; without even the implied warranty of
++//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++//GNU General Public License for more details.
++//
++//You should have received a copy of the GNU General Public License
++//along with this program; if not, write to the Free Software
++//Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. 
++
++#ifndef _NULLFEEDBACK_H
++#define _NULLFEEDBACK_H
++
++#include <streambuf>
++#include "feedback.h"
++
++namespace gpspoint2 {
++using namespace std;
++using namespace gpspoint2;
++
++
++/// This Class provides feedback to user
++class NullFeedBack :public FeedBack
++{
++   public:
++      NullFeedBack();
++      virtual void progress(int i,int n)
++      {}
++      virtual ostream& getStream();
++   protected:
++      class nullbuf: public streambuf {
++      protected:
++         virtual int_type overflow(int_type c)
++         {
++           return c;
++	 }
++      };
++      nullbuf nb;
++      ostream os;
++      
++};
++
++inline
++ostream& NullFeedBack::getStream()
++{
++  return os;
++}
++
++
++}
++#endif 
+diff -uNdr gpspoint-2.030521.old/src/protocol.cpp gpspoint-2.030521/src/protocol.cpp
+--- gpspoint-2.030521.old/src/protocol.cpp	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/protocol.cpp	2004-03-07 17:03:49.000000000 +0100
+@@ -283,34 +283,34 @@
+ }
+ 
+ 
+-void Protocol::printTest(void)
++void Protocol::printTest(ostream& os)
+ {
+    
+-   cerr    << endl;
+-   cerr  << "\tProduct ID:           "   <<  product_ID << endl;
+-   cerr  << "\tSoftware Version:     "   <<  softwareVersion << endl;
+-   cerr  << "\tProduct Descpription: " <<  productDescription << endl;
+-   cerr  << endl;
+-   cerr  << "\tLink Protokol:          " << linkProtocol << endl;
+-   cerr  << "\tCommand Protokol:       " << cmndProtocol << endl;
+-   cerr  << "\tWaypoint Protokol:      " << wptProtocol << endl;
+-   cerr  << "\tWaypoint Data Protocol: " << wptDataProtocol << endl;
+-   cerr  << "\tRoute Protokol:         " << rteProtocol << endl;
+-   cerr  << "\tRoute Data Protocol:    " << rteDataProtocol << endl;
+-   cerr  << "\tTrack Protokol:         " << trkProtocol << endl;
+-   cerr  << "\tTrack Header Protocol:  " << trkHeaderProtocol<< endl;
+-   cerr  << "\tTrack Data Protocol:    " << trkDataProtocol << endl;
+-   cerr  << "\tAlmanac Protokol:       " << almProtocol << endl;
+-   cerr  << "\tAlmanac Data Protocol:  " << almDataProtocol << endl;
+-   cerr  << endl;
++   os    << endl;
++   os  << "\tProduct ID:           "   <<  product_ID << endl;
++   os  << "\tSoftware Version:     "   <<  softwareVersion << endl;
++   os  << "\tProduct Descpription: " <<  productDescription << endl;
++   os  << endl;
++   os  << "\tLink Protokol:          " << linkProtocol << endl;
++   os  << "\tCommand Protokol:       " << cmndProtocol << endl;
++   os  << "\tWaypoint Protokol:      " << wptProtocol << endl;
++   os  << "\tWaypoint Data Protocol: " << wptDataProtocol << endl;
++   os  << "\tRoute Protokol:         " << rteProtocol << endl;
++   os  << "\tRoute Data Protocol:    " << rteDataProtocol << endl;
++   os  << "\tTrack Protokol:         " << trkProtocol << endl;
++   os  << "\tTrack Header Protocol:  " << trkHeaderProtocol<< endl;
++   os  << "\tTrack Data Protocol:    " << trkDataProtocol << endl;
++   os  << "\tAlmanac Protokol:       " << almProtocol << endl;
++   os  << "\tAlmanac Data Protocol:  " << almDataProtocol << endl;
++   os  << endl;
+ 
+-   cerr  << "\tWaypoint Up- & Download : " ; 
+-      if(waypointTransfer)  cerr << "YES" ; else cerr << "NO" ; cerr << endl;
+-   cerr  << "\tRoute Up- & Download : " ; 
+-      if(routeHeaderTransfer && waypointTransfer)  cerr << "YES" ; else cerr << "NO" ; cerr << endl;
+-   cerr  << "\tTrack Up- & Download : " ; 
+-      if(trackTransfer)  cerr << "YES" ; else cerr << "NO" ; cerr << endl;
+-   cerr  << endl;
++   os  << "\tWaypoint Up- & Download : " ; 
++      if(waypointTransfer)  os << "YES" ; else os << "NO" ; os << endl;
++   os  << "\tRoute Up- & Download : " ; 
++      if(routeHeaderTransfer && waypointTransfer)  os << "YES" ; else os << "NO" ; os << endl;
++   os  << "\tTrack Up- & Download : " ; 
++      if(trackTransfer)  os << "YES" ; else os << "NO" ; os << endl;
++   os  << endl;
+ }
+ 
+ }
+diff -uNdr gpspoint-2.030521.old/src/protocol.h gpspoint-2.030521/src/protocol.h
+--- gpspoint-2.030521.old/src/protocol.h	2003-05-20 11:54:34.000000000 +0200
++++ gpspoint-2.030521/src/protocol.h	2004-03-07 17:03:49.000000000 +0100
+@@ -40,7 +40,7 @@
+ #include "d600_date_time_type.h"
+ 
+ #include "product_data_type.h"
+-#include <iostream>
++#include <ostream>
+ 
+ 
+ namespace gpspoint2 {
+@@ -120,7 +120,7 @@
+       void closePort(void){ Link::closePort(); clear();}
+    
+       /// Writes infomation to cout.
+-      void printTest(void);
++      void printTest(ostream& os);
+ 
+       /// set Bauds 
+       void setSpeed(string s) { Link::setSpeed(s); }
