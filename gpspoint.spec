@@ -1,5 +1,5 @@
-Summary:	Software to interact with a garmin gps device.
-Summary(pl):	Biblioteka do komunikacji z odbiornikami gps garmina
+Summary:	Software to interact with a garmin GPS device
+Summary(pl):	Biblioteka do komunikacji z odbiornikami GPS garmina
 Name:		gpspoint
 Version:	2.030521
 Release:	0.5
@@ -13,12 +13,12 @@ URL:		http://gpspoint.dnsalias.net/gpspoint2/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-With gpspoint you can interact with a garmin gps device. Most
+With gpspoint you can interact with a garmin GPS device. Most
 importantly you can down- and upload waypoints, routes and tracks.
 
 %description -l pl
-Biblioteka gpspoint s³u¿y do komunikacji z odbiornikami gps garmina.
-Pozwala miêdzy innymi na ¶ci±ganie i ³±dowanie waypointów, tras 
+Biblioteka gpspoint s³u¿y do komunikacji z odbiornikami GPS garmina.
+Pozwala miêdzy innymi na ¶ci±ganie i ³adowanie waypointów, tras 
 i ¶ladów.
 
 %package devel
@@ -28,10 +28,10 @@ Group:		Development/Libraries
 Requires:	%{name} = %{version}
 
 %description devel
-Header files for gpspoint
+Header files for gpspoint.
 
 %description -l pl devel
-Pliki nag³ówkowe dla gpspoint
+Pliki nag³ówkowe dla gpspoint.
 
 %package static
 Summary:	Static version of gpspoint
@@ -39,20 +39,18 @@ Summary(pl):	Statyczna wersja gpspoint
 Group:		Development/Libraries
 Requires:	%{name}-devel = %{version}
 
-
 %description static
-Static version gpspoint
+Static version gpspoint.
 
 %description -l pl static
-Statyczna wersja gpspoint
+Statyczna wersja gpspoint.
 
 %package progs
 Summary:	Gpspoint utility programs
 Group:		Applications
 
-
 %description progs
-Gpspoint utility programs
+Gpspoint utility programs.
 
 %prep
 %setup -q
@@ -80,11 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%pre
-
 %post -p /sbin/ldconfig
-
-%preun
 
 %postun -p /sbin/ldconfig
 
