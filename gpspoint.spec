@@ -35,7 +35,7 @@ Requires:	libstdc++-devel
 %description devel
 Header files for gpspoint library.
 
-%description -l pl devel
+%description devel -l pl
 Pliki nag³ówkowe biblioteki gpspoint.
 
 %package static
@@ -47,7 +47,7 @@ Requires:	%{name}-devel = %{version}-%{release}
 %description static
 Static version gpspoint.
 
-%description -l pl static
+%description static -l pl
 Statyczna wersja gpspoint.
 
 %package progs
