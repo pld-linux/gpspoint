@@ -10,6 +10,10 @@ Source0:	http://gpspoint.dnsalias.net/gpspoint2/download/%{name}-%{version}.tar.
 Patch0:		%{name}-feedback.patch
 Patch1:		%{name}-precision.patch
 URL:		http://gpspoint.dnsalias.net/gpspoint2/
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libstdc++-devel
+BuildRequires:	libtool >= 2:1.5
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -22,22 +26,23 @@ Pozwala miêdzy innymi na ¶ci±ganie i ³adowanie waypointów, tras
 i ¶ladów.
 
 %package devel
-Summary:	Header files for gpspoint
-Summary(pl):	Pliki nag³ówkowe dla gpspoint
+Summary:	Header files for gpspoint library
+Summary(pl):	Pliki nag³ówkowe biblioteki gpspoint
 Group:		Development/Libraries
-Requires:	%{name} = %{version}
+Requires:	%{name} = %{version}-%{release}
+Requires:	libstdc++-devel
 
 %description devel
-Header files for gpspoint.
+Header files for gpspoint library.
 
 %description -l pl devel
-Pliki nag³ówkowe dla gpspoint.
+Pliki nag³ówkowe biblioteki gpspoint.
 
 %package static
-Summary:	Static version of gpspoint
-Summary(pl):	Statyczna wersja gpspoint
+Summary:	Static version of gpspoint library
+Summary(pl):	Statyczna wersja biblioteki gpspoint
 Group:		Development/Libraries
-Requires:	%{name}-devel = %{version}
+Requires:	%{name}-devel = %{version}-%{release}
 
 %description static
 Static version gpspoint.
@@ -47,10 +52,15 @@ Statyczna wersja gpspoint.
 
 %package progs
 Summary:	Gpspoint utility programs
+Summary(pl):	Programy narzêdziowe gpspoint
 Group:		Applications
+Requires:	%{name} = %{version}-%{release}
 
 %description progs
 Gpspoint utility programs.
+
+%description progs -l pl
+Programy narzêdziowe gpspoint.
 
 %prep
 %setup -q
@@ -63,14 +73,12 @@ Gpspoint utility programs.
 %{__autoconf}
 %{__autoheader}
 %{__automake}
-
-%configure %{?debug:CPPFLAGS=-DDEBUG}
+%configure \
+	%{?debug:CPPFLAGS=-DDEBUG}
 %{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-# create directories if necessary
-#install -d $RPM_BUILD_ROOT
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
@@ -78,9 +86,8 @@ rm -rf $RPM_BUILD_ROOT
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post -p /sbin/ldconfig
-
-%postun -p /sbin/ldconfig
+%post	-p /sbin/ldconfig
+%postun	-p /sbin/ldconfig
 
 %files
 %defattr(644,root,root,755)
@@ -89,9 +96,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files devel
 %defattr(644,root,root,755)
-%{_includedir}/gpspoint2
-%{_libdir}/*.so
+%attr(755,root,root) %{_libdir}/*.so
 %{_libdir}/*.la
+%{_includedir}/gpspoint2
 
 %files static
 %defattr(644,root,root,755)
