@@ -1,5 +1,5 @@
 Summary:	Software to interact with a garmin GPS device
-Summary(pl):	Biblioteka do komunikacji z odbiornikami GPS garmina
+Summary(pl.UTF-8):   Biblioteka do komunikacji z odbiornikami GPS garmina
 Name:		gpspoint
 Version:	2.030521
 Release:	0.5
@@ -20,14 +20,14 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 With gpspoint you can interact with a garmin GPS device. Most
 importantly you can down- and upload waypoints, routes and tracks.
 
-%description -l pl
-Biblioteka gpspoint s硊縴 do komunikacji z odbiornikami GPS garmina.
-Pozwala mi阣zy innymi na 禼i眊anie i 砤dowanie waypoint體, tras 
-i 秎ad體.
+%description -l pl.UTF-8
+Biblioteka gpspoint s艂u偶y do komunikacji z odbiornikami GPS garmina.
+Pozwala mi臋dzy innymi na 艣ci膮ganie i 艂adowanie waypoint贸w, tras 
+i 艣lad贸w.
 
 %package devel
 Summary:	Header files for gpspoint library
-Summary(pl):	Pliki nag丑wkowe biblioteki gpspoint
+Summary(pl.UTF-8):   Pliki nag艂贸wkowe biblioteki gpspoint
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 Requires:	libstdc++-devel
@@ -35,32 +35,32 @@ Requires:	libstdc++-devel
 %description devel
 Header files for gpspoint library.
 
-%description devel -l pl
-Pliki nag丑wkowe biblioteki gpspoint.
+%description devel -l pl.UTF-8
+Pliki nag艂贸wkowe biblioteki gpspoint.
 
 %package static
 Summary:	Static version of gpspoint library
-Summary(pl):	Statyczna wersja biblioteki gpspoint
+Summary(pl.UTF-8):   Statyczna wersja biblioteki gpspoint
 Group:		Development/Libraries
 Requires:	%{name}-devel = %{version}-%{release}
 
 %description static
 Static version gpspoint.
 
-%description static -l pl
+%description static -l pl.UTF-8
 Statyczna wersja gpspoint.
 
 %package progs
 Summary:	Gpspoint utility programs
-Summary(pl):	Programy narz阣ziowe gpspoint
+Summary(pl.UTF-8):   Programy narz臋dziowe gpspoint
 Group:		Applications
 Requires:	%{name} = %{version}-%{release}
 
 %description progs
 Gpspoint utility programs.
 
-%description progs -l pl
-Programy narz阣ziowe gpspoint.
+%description progs -l pl.UTF-8
+Programy narz臋dziowe gpspoint.
 
 %prep
 %setup -q
