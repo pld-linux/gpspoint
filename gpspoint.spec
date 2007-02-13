@@ -1,5 +1,5 @@
 Summary:	Software to interact with a garmin GPS device
-Summary(pl.UTF-8):   Biblioteka do komunikacji z odbiornikami GPS garmina
+Summary(pl.UTF-8):	Biblioteka do komunikacji z odbiornikami GPS garmina
 Name:		gpspoint
 Version:	2.030521
 Release:	0.5
@@ -27,7 +27,7 @@ i śladów.
 
 %package devel
 Summary:	Header files for gpspoint library
-Summary(pl.UTF-8):   Pliki nagłówkowe biblioteki gpspoint
+Summary(pl.UTF-8):	Pliki nagłówkowe biblioteki gpspoint
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 Requires:	libstdc++-devel
@@ -40,7 +40,7 @@ Pliki nagłówkowe biblioteki gpspoint.
 
 %package static
 Summary:	Static version of gpspoint library
-Summary(pl.UTF-8):   Statyczna wersja biblioteki gpspoint
+Summary(pl.UTF-8):	Statyczna wersja biblioteki gpspoint
 Group:		Development/Libraries
 Requires:	%{name}-devel = %{version}-%{release}
 
@@ -52,7 +52,7 @@ Statyczna wersja gpspoint.
 
 %package progs
 Summary:	Gpspoint utility programs
-Summary(pl.UTF-8):   Programy narzędziowe gpspoint
+Summary(pl.UTF-8):	Programy narzędziowe gpspoint
 Group:		Applications
 Requires:	%{name} = %{version}-%{release}
 
