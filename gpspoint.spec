@@ -2,13 +2,14 @@ Summary:	Software to interact with a garmin GPS device
 Summary(pl.UTF-8):	Biblioteka do komunikacji z odbiornikami GPS garmina
 Name:		gpspoint
 Version:	2.030521
-Release:	0.5
+Release:	0.6
 License:	GPL
 Group:		Libraries
 Source0:	http://gpspoint.dnsalias.net/gpspoint2/download/%{name}-%{version}.tar.gz
 # Source0-md5:	90e263d5297608d695743a9b0122f930
 Patch0:		%{name}-feedback.patch
 Patch1:		%{name}-precision.patch
+Patch2:		%{name}-gcc.patch
 URL:		http://gpspoint.dnsalias.net/gpspoint2/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -66,6 +67,7 @@ Programy narzędziowe gpspoint.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 %build
 %{__libtoolize}
