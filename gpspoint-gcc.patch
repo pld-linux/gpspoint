@@ -1,0 +1,90 @@
+diff -uNdr gpspoint-2.030521.old/src/constants.h gpspoint-2.030521/src/constants.h
+--- gpspoint-2.030521.old/src/constants.h	2009-06-29 22:24:23.000000000 +0200
++++ gpspoint-2.030521/src/constants.h	2009-06-29 22:40:26.000000000 +0200
+@@ -32,7 +32,7 @@
+ class Constants
+ {
+    public:
+-      Constants::Constants(void);
++      Constants(void);
+ 
+    protected:
+       static const g_byte
+diff -uNdr gpspoint-2.030521.old/src/main.cpp gpspoint-2.030521/src/main.cpp
+--- gpspoint-2.030521.old/src/main.cpp	2009-06-29 22:24:23.000000000 +0200
++++ gpspoint-2.030521/src/main.cpp	2009-06-29 22:40:53.000000000 +0200
+@@ -24,6 +24,7 @@
+ 
+ #include <string>
+ #include <fstream>
++#include <cstdlib>
+ #include <signal.h>
+ 
+ 
+diff -uNdr gpspoint-2.030521.old/src/newsymbols.h gpspoint-2.030521/src/newsymbols.h
+--- gpspoint-2.030521.old/src/newsymbols.h	2003-05-20 11:54:34.000000000 +0200
++++ gpspoint-2.030521/src/newsymbols.h	2009-06-29 22:40:26.000000000 +0200
+@@ -28,7 +28,7 @@
+ struct NewSymbols
+ {
+         public: 
+-                NewSymbols::NewSymbols(void);   
++                NewSymbols(void);   
+ 
+         protected:
+                 string number2symbol(g_int) const;     
+diff -uNdr gpspoint-2.030521.old/src/oldsymbols.h gpspoint-2.030521/src/oldsymbols.h
+--- gpspoint-2.030521.old/src/oldsymbols.h	2003-05-20 11:54:34.000000000 +0200
++++ gpspoint-2.030521/src/oldsymbols.h	2009-06-29 22:40:26.000000000 +0200
+@@ -29,7 +29,7 @@
+ struct OldSymbols
+ {
+ 	public: 
+-		OldSymbols::OldSymbols(void);	
++		OldSymbols(void);	
+ 
+ 	protected:
+ 		/// returns symbol as a string given a symbol ID
+diff -uNdr gpspoint-2.030521.old/src/posixserial.cpp gpspoint-2.030521/src/posixserial.cpp
+--- gpspoint-2.030521.old/src/posixserial.cpp	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/posixserial.cpp	2009-06-29 22:40:26.000000000 +0200
+@@ -20,6 +20,7 @@
+ 
+ 
+ #include <fstream>
++#include <cstring>
+ 
+ #define V_TIME 5  //  wait V_TIME for characters on serial port
+ 
+diff -uNdr gpspoint-2.030521.old/src/records_type.h gpspoint-2.030521/src/records_type.h
+--- gpspoint-2.030521.old/src/records_type.h	2003-04-14 18:23:33.000000000 +0200
++++ gpspoint-2.030521/src/records_type.h	2009-06-29 22:40:26.000000000 +0200
+@@ -41,10 +41,10 @@
+    public: 
+ 
+    /// constructor 
+-   Records_Type::Records_Type(void);
++   Records_Type(void);
+ 
+    /// calls set with the given Packet
+-   Records_Type::Records_Type(Packet);
++   Records_Type(Packet);
+ 
+    /// resets internal data
+    void clear(void);
+diff -uNdr gpspoint-2.030521.old/src/wpt_type.h gpspoint-2.030521/src/wpt_type.h
+--- gpspoint-2.030521.old/src/wpt_type.h	2009-06-29 22:24:23.000000000 +0200
++++ gpspoint-2.030521/src/wpt_type.h	2009-06-29 22:40:26.000000000 +0200
+@@ -99,10 +99,10 @@
+  protected:
+ 
+    /// semicircle to double 
+-   double Wpt_Type::s2d(g_long sc);
++   double s2d(g_long sc);
+ 
+    /// double to semicicle 
+-   g_long Wpt_Type::d2s(double deg);
++   g_long d2s(double deg);
+ 
+    string   name;
+    string   comment;
